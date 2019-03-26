@@ -13,8 +13,7 @@
 //#define LEDs false
 #define LEDs true
 #define BAUD_RATE 9600
-//#define BAUD_RATE 115200
-//#define BAUD_RATE 4800
+
 
 #define flag_body 0
 #define flag_hand 0
@@ -82,12 +81,13 @@ unsigned int t;
 bool cam_waiting = false;
 bool web_com[] = {false, false, false, false, false, false, false, false};
 ///********************//
-String gestureArray[4];
+int gestureArray[4];
 bool gestureComplete = false;
 int middleCounter = 0;
 int upCounter = 0;
 int downCounter = 0;
 QList <int> gestureQueue;
+QList <int> acceptedGestureQueue;
 
 
 bool CONNECTED = false;
@@ -191,6 +191,8 @@ void loop() {
     bool found_middle = false;
     bool found_up = false;
     bool found_down = false;
+    bool found_command = false;
+
 
     for (int i = 0; i < num_faces; i++) {
       JsonObject& aux_json = myArray[i]->createObject();
@@ -214,7 +216,6 @@ void loop() {
       gaze_["pitch"] = face[i].gaze[1];
       int pitch = face[i].gaze[1];
 
-
       //if gaze is in the middel - add 0
       if (yaw > -7 && yaw < 7 && pitch > -7 && pitch < 7) {
         gestureQueue.push_front(0);
@@ -234,7 +235,7 @@ void loop() {
         gestureQueue.pop_back();
       }
 
-
+  
 
       printGestureQueueSize();
 
@@ -259,7 +260,17 @@ void loop() {
       }
        //END forloop adding to gestureCounters
 
+       
+      //------TODO-----------
+       //ADD ACCEPTED GESTURE TO ARRAY/LIST IF PREVOIUS GESTURE NOT THE SAME AS CURRENT
+       //CHECK ACCEPTED GESTURELIST IF GESTURE UP IS FOLLOWED BY GESTURE DOWN
+       //IF SO SET COMMANDFOUND ==TRUE
+       //SET LEDLIGHT TO MESSAGE SENT COLOR
+       
+     
 
+
+       
      printCounters(); 
      resetCounters();
 
@@ -268,10 +279,11 @@ void loop() {
       yield();
     }
 
+    //IF-STATEMENT SETS LED COLORS RELATED TO GESTURES
     if (LEDs) {
       if (num_faces > 0) {
         if (found_middle) {
-          // Grön, gaze in the middle
+          // Green, gaze in the middle
           colorWipe(strip.Color(0, 255, 0 ));
         }
         else if (found_up) {
@@ -291,6 +303,13 @@ void loop() {
       // No, LED if face is not detected
       else   colorWipe(strip.Color(0, 0, 0, 0));
     }
+    //END IF-STATEMENT SETS LED COLORS
+
+
+    
+
+
+    
     String text_tx;
     root.printTo(text_tx);
 
