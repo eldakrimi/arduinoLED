@@ -216,13 +216,18 @@ void loop() {
       gaze_["pitch"] = face[i].gaze[1];
       int pitch = face[i].gaze[1];
 
+       //If gestureQueue is too big, remove one. 
+      if (gestureQueue.size() > 8)    {
+        gestureQueue.pop_back();
+      }
+
       //if gaze is in the middel - add 0
       if (yaw > -7 && yaw < 7 && pitch > -7 && pitch < 7) {
         gestureQueue.push_front(0);
       }
       else if (
         //if gaze is up to the right  - add 1
-        yaw < -13 && pitch > 12) {
+        yaw < -10 && pitch > 10) {
         gestureQueue.push_front(1);
       }
       else if (
@@ -230,16 +235,16 @@ void loop() {
         yaw > 8 && pitch < -8) {
         gestureQueue.push_front(2);
       }
-      //If gestureQueue is too big, remove one. 
-      if (gestureQueue.size() > 8)    {
-        gestureQueue.pop_back();
-      }
+
+      
+     
 
   
 
       printGestureQueueSize();
 
       //START forloop adding to gestueCounters
+      //ADD ACCEPTED GESTURE TO ARRAY/LIST IF PREVOIUS GESTURE IF  NOT THE SAME AS CURRENT
       for (int i = 0; i < gestureQueue.size(); i++) {
         if (gestureQueue[i] == 0) {
           middleCounter++;
@@ -251,26 +256,44 @@ void loop() {
 
         if (middleCounter >= 4) {
           found_middle = true;
+          if(acceptedGestureQueue.size()>0 && acceptedGestureQueue[0]!=0){
+           acceptedGestureQueue.push_front(0);
+         }         
         } else if (upCounter >= 4) {
           found_up = true;
+      //     if(acceptedGestureQueue[0]!=1){
+        //    acceptedGestureQueue.push_front(1);
+      //    }  
         }
         else if (downCounter >= 4) {
           found_down = true;
+        //   if(acceptedGestureQueue[0]!=2){
+        //    acceptedGestureQueue.push_front(2);
+        //  }  
         }
       }
-       //END forloop adding to gestureCounters
 
-       
+      
+
+
+//        if (acceptedGestureQueue.size() > 3)    {
+//        acceptedGestureQueue.pop_back();
+//      }
+       //END forloop adding to gestureCounters
+      
+     
+      
+      //CHECK ACCEPTED GESTURELIST IF GESTURE UP IS FOLLOWED BY GESTURE DOWN
+
+     //   if(acceptedGestureQueue.size() ==3 && acceptedGestureQueue[2]==0 &&acceptedGestureQueue[1]==1 && acceptedGestureQueue[0]==2 ){
+     //     found_command = true;
+      //  }
+            
       //------TODO-----------
-       //ADD ACCEPTED GESTURE TO ARRAY/LIST IF PREVOIUS GESTURE NOT THE SAME AS CURRENT
+    
        //CHECK ACCEPTED GESTURELIST IF GESTURE UP IS FOLLOWED BY GESTURE DOWN
        //IF SO SET COMMANDFOUND ==TRUE
-       //SET LEDLIGHT TO MESSAGE SENT COLOR
-       
-     
-
-
-       
+       //SET LEDLIGHT TO MESSAGE SENT COLOR 
      printCounters(); 
      resetCounters();
 
@@ -282,17 +305,40 @@ void loop() {
     //IF-STATEMENT SETS LED COLORS RELATED TO GESTURES
     if (LEDs) {
       if (num_faces > 0) {
-        if (found_middle) {
-          // Green, gaze in the middle
-          colorWipe(strip.Color(0, 255, 0 ));
+        if(found_command){
+//          // Green, found command
+//          colorWipe(strip.Color(0, 255, 0 ));
+        }
+        else if (found_middle) {
+          // WHITE, gaze in the middle
+          colorWipe(strip.Color(255, 255, 255 ));
         }
         else if (found_up) {
           // Blue, gaze is up,right
           colorWipe(strip.Color(0, 0, 255));
         }
         else if (found_down) {
-          // RED, gaze is down,left
-          colorWipe(strip.Color(255, 0, 0));
+          colorWipe(strip.Color(255, 0, 0)); // Red
+          delay(100);
+          colorWipe(strip.Color(255, 127, 0)); // Orange
+          delay(100);
+          colorWipe(strip.Color(255, 255, 0)); // Yellow
+          delay(100);
+          colorWipe(strip.Color(0 , 255, 0)); // Green
+          delay(100);
+          colorWipe(strip.Color(0, 255, 127)); //Mint
+          delay(100);
+          colorWipe(strip.Color(0, 255, 255)); //Turkos
+          delay(100);
+          colorWipe(strip.Color(0, 0, 255)); // Blue
+          delay(100);
+          colorWipe(strip.Color(127, 0, 255)); //Lila
+          delay(100);
+          colorWipe(strip.Color(255, 0, 255)); //Magenta
+          delay(100);
+          colorWipe(strip.Color(255, 0, 127)); // Rosa
+          
+          
         }
         else {
           //No LED-light if only face is detected
@@ -480,4 +526,16 @@ void printGestureQueueSize(){
       USE_SERIAL.print("Kö storlek:  ");
       USE_SERIAL.print(gestureQueue.size());
       USE_SERIAL.print("\t"); 
+      USE_SERIAL.print("Acceptkö:  ");
+      if(acceptedGestureQueue.size()>3){
+        USE_SERIAL.print(acceptedGestureQueue[0]);
+         USE_SERIAL.print(", "); 
+         USE_SERIAL.print(acceptedGestureQueue[1]);
+         USE_SERIAL.print(", ");
+         USE_SERIAL.print(acceptedGestureQueue[2]);
+         USE_SERIAL.print("\t"); 
+
+      
+      }
+      
 }
